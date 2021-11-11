@@ -43,7 +43,7 @@ hwaddress ether 3e:a0:f8:fb:39:c5
 ```
 
 Saat menyalakan node Skypie, didapatkan IPnya tetap, yaitu 10.19.3.69
-![7](7.png)
+![7](img/7.png)
 
 ### No 8
 
@@ -87,7 +87,7 @@ Pool dibagi menjadi 2 class untuk 2 konfigurasi. Class pertama dikonfigurasi unt
 ```
 
 Saat login menggunakan luffybelikapalc10, maka user tersebut akan terlimit bandwidth download file .jpg dan .png nya seperti pada konfigurasi. Saat berusaha untuk mendownload file tersebut, user tersebut akan tertahan pada page ini karena sudah di limit bandwidthnya.
-![12](12.png)
+![12](img/12.png)
 
 Sedangkan jika login menggunakan zorobelikapalc10, saat user berusaha untuk mendownload file yang bukan .jpg atau .png, download tersebut akan langsung selesai dan pindah ke page selanjutnya karena tidak di limit bandwidthnya.
-![13](13.png)
+![13](img/13.png)
