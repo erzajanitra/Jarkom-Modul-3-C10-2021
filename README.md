@@ -9,17 +9,75 @@
 
 ## Soal dan Pembahasan
 ### No 1
-Soal: Luffy bersama Zoro berencana membuat peta tersebut dengan kriteria EniesLobby sebagai DNS Server, Jipangu sebagai DHCP Server, Water7 sebagai Proxy Server 
+Soal: Luffy bersama Zoro berencana membuat peta tersebut dengan kriteria EniesLobby sebagai DNS Server, Jipangu sebagai DHCP Server, Water7 sebagai Proxy Server.
 
+Jawaban : Membuat topologi seperti perintah soal dan mencoba ping google.com pada EniesLobby,  Jipangu, dan Water7.
+- Topologi
+  ![topologi](img/topologi.JPG)
+- ping google.com<br/>
+  ![enies](https://github.com/erzajanitra/Jarkom-Modul-3-C10-2021/blob/48056f9248859075ac97dac50b22edf3dc277709/img/ping%20google%20di%20enies.JPG)
+  ![jp](https://github.com/erzajanitra/Jarkom-Modul-3-C10-2021/blob/main/img/ping%20google%20di%20jipangu.JPG)
+  ![w7](https://github.com/erzajanitra/Jarkom-Modul-3-C10-2021/blob/main/img/ping%20google%20di%20water7.JPG)
+  
 ### No 2
 Soal: dan Foosha sebagai DHCP Relay
+
+Jawaban : Untuk menjadikan Foosha sebagai DHCP Relay, perlu dilakukan konfigurasi pada Jipangu sebagai DHCP Server dan pada Foosha. 
+- Menambahkan konfigurasi pada `isc-dhcp-server` pada Jipangu
+  Mengarahkan interfaces pada `eth0` karena Jipangu tersambung dengan nodes lainnya melalui eth0 sehingga Jipangu dapat tersambung dengan Foosha.
+  ![jip](https://github.com/erzajanitra/Jarkom-Modul-3-C10-2021/blob/main/img/isc-dhcp-server%20di%20jipangu.JPG)
+
+- Menambahkan konfigurasi pada `dhcpf.conf` pada Jipangu
+  Pada Jipangu dilakukan konfigurasi untuk melakukan relay pada subnet yang menghubungkan Jipangu dengan Foosha, yaitu subnet 10.19.2.0.
+  ```
+    subnet 10.19.2.0 netmask 255.255.255.0{
+     }
+  ```
+  
+- Menambahkan konfigurasi pada `isc-dhcp-relay` pada Foosha
+  Menambahkan IP Address Jipangu pada `SERVERS` sehingga Foosha dapat menerima dan melanjutkan request kepada DHCP Server. Kemudian, pada `INTERFACES` ditambahkan `eth0 eth1 eth2` supaya Foosha dapat berjalan dan menerima request dari switch 1, 2, dan 3.
+   ![foo](https://github.com/erzajanitra/Jarkom-Modul-3-C10-2021/blob/main/img/isc-dhcp-relay%20di%20foosha.JPG)
+   
+### Konfigurasi 'dhcpd.conf' pada Jipangu
+Konfigurasi pada `/etc/dhcp/dhcpd.conf` dibawah ini akan digunakan untuk nomor 3-6
+![dhcpd](https://github.com/erzajanitra/Jarkom-Modul-3-C10-2021/blob/main/img/dhcpd.conf%20jipangu.JPG)
 
 ### No 3
 Soal: Semua client yang ada HARUS menggunakan konfigurasi IP dari DHCP Server. Client yang melalui Switch1 mendapatkan range IP dari [prefix IP].1.20 - [prefix IP].1.99 dan [prefix IP].1.150 - [prefix IP].1.169
 
+Jawaban : 
+- Supaya semua client mendapatkan IP dari DHCP Server, pada konfigurasi `/etc/network/interfaces` ditambahkan 
+  ```
+    auto eth0
+    iface eth0 inet dhcp
+  ```
+  dan comment `echo nameserver 192.169.122.1 > /etc/resolv.conf` pada masing-masing client sehingga nameserver mengarah pada DHCP Server.
+  
+- Konfigurasi pada `/etc/dhcp/dhcpd.conf` untuk set range IP pada switch 1 
+  Konfigurasi untuk switch 1 menggunakan subnet `10.19.1.0 ` seperti pada gambar di atas dengan range ip sebagai berikut. Angka 1 pada IP menunjukkan bahwa IP ini digunakan untuk switch 1 yang terhubung dengan `eth1`.
+  ```
+    range 10.19.1.20 10.19.1.99;
+    range 10.19.1.150 10.19.1.169;
+     }
+  ```
+- Berikut ini adalah Client Loguetown dan Alabasta yang memiliki IP dari DHCP Server
+  ![lg](https://github.com/erzajanitra/Jarkom-Modul-3-C10-2021/blob/main/img/ip%20loguetown.JPG)
+  ![al](https://github.com/erzajanitra/Jarkom-Modul-3-C10-2021/blob/main/img/ip%20alabasta.JPG)
+  
 ### No 4
 Soal: Client yang melalui Switch3 mendapatkan range IP dari [prefix IP].3.30 - [prefix IP].3.50 
+Jawaban : 
+- Konfigurasi pada `/etc/dhcp/dhcpd.conf` untuk set range IP pada switch 3 
+  Konfigurasi untuk switch 3 menggunakan subnet `10.19.3.0 ` seperti pada gambar di atas dengan range ip sebagai berikut. Angka 3 pada IP menunjukkan bahwa IP ini digunakan untuk switch 3 yang terhubung dengan `eth3`.
+  ```
+    range 10.19.3.30 10.19.3.50;
+     }
+  ```
 
+- Berikut ini adalah Client Skypie dan Tottoland yang memiliki IP dari DHCP Server. Skypie memiliki ip `10.19.3.69` karena diberikan fixed address yang konfigurasinya akan dijelaskan pada nomor 7.
+  ![sk](https://github.com/erzajanitra/Jarkom-Modul-3-C10-2021/blob/main/img/ip%20skypie.JPG)
+  ![to](https://github.com/erzajanitra/Jarkom-Modul-3-C10-2021/blob/main/img/ip%20totto.JPG)
+  
 ### No 5
 Soal: Client mendapatkan DNS dari EniesLobby dan client dapat terhubung dengan internet melalui DNS tersebut.
 
