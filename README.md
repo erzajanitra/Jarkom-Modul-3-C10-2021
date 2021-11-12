@@ -28,14 +28,14 @@ Jawaban : Untuk menjadikan Foosha sebagai DHCP Relay, perlu dilakukan konfiguras
   ![jip](https://github.com/erzajanitra/Jarkom-Modul-3-C10-2021/blob/main/img/isc-dhcp-server%20di%20jipangu.JPG)
 
 - Menambahkan konfigurasi pada `dhcpf.conf` pada Jipangu
-  Pada Jipangu dilakukan konfigurasi untuk melakukan relay pada subnet yang menghubungkan Jipangu dengan Foosha, yaitu subnet 10.19.2.0.
+  <br/>Pada Jipangu dilakukan konfigurasi untuk melakukan relay pada subnet yang menghubungkan Jipangu dengan Foosha, yaitu subnet 10.19.2.0.
   ```
     subnet 10.19.2.0 netmask 255.255.255.0{
      }
   ```
   
 - Menambahkan konfigurasi pada `isc-dhcp-relay` pada Foosha
-  Menambahkan IP Address Jipangu pada `SERVERS` sehingga Foosha dapat menerima dan melanjutkan request kepada DHCP Server. Kemudian, pada `INTERFACES` ditambahkan `eth0 eth1 eth2` supaya Foosha dapat berjalan dan menerima request dari switch 1, 2, dan 3.
+  <br/>Menambahkan IP Address Jipangu pada `SERVERS` sehingga Foosha dapat menerima dan melanjutkan request kepada DHCP Server. Kemudian, pada `INTERFACES` ditambahkan `eth0 eth1 eth2` supaya Foosha dapat berjalan dan menerima request dari switch 1, 2, dan 3.
    ![foo](https://github.com/erzajanitra/Jarkom-Modul-3-C10-2021/blob/main/img/isc-dhcp-relay%20di%20foosha.JPG)
    
 ### Konfigurasi 'dhcpd.conf' pada Jipangu
@@ -54,11 +54,14 @@ Jawaban :
   dan comment `echo nameserver 192.169.122.1 > /etc/resolv.conf` pada masing-masing client sehingga nameserver mengarah pada DHCP Server.
   
 - Konfigurasi pada `/etc/dhcp/dhcpd.conf` untuk set range IP pada switch 1 
-  Konfigurasi untuk switch 1 menggunakan subnet `10.19.1.0 ` seperti pada gambar di atas dengan range ip sebagai berikut. Angka 1 pada IP menunjukkan bahwa IP ini digunakan untuk switch 1 yang terhubung dengan `eth1`.
+  <br/>Konfigurasi untuk switch 1 menggunakan subnet `10.19.1.0 ` seperti pada gambar di atas dengan range ip sebagai berikut. Angka 1 pada IP menunjukkan bahwa IP ini digunakan untuk switch 1 yang terhubung dengan `eth1`.
   ```
+  subnet 10.19.1.0 netmask 255.255.255.0{
+    ...
     range 10.19.1.20 10.19.1.99;
     range 10.19.1.150 10.19.1.169;
-     }
+    ...
+   }
   ```
 - Berikut ini adalah Client Loguetown dan Alabasta yang memiliki IP dari DHCP Server
   ![lg](https://github.com/erzajanitra/Jarkom-Modul-3-C10-2021/blob/main/img/ip%20loguetown.JPG)
@@ -68,10 +71,12 @@ Jawaban :
 Soal: Client yang melalui Switch3 mendapatkan range IP dari [prefix IP].3.30 - [prefix IP].3.50 
 Jawaban : 
 - Konfigurasi pada `/etc/dhcp/dhcpd.conf` untuk set range IP pada switch 3 
-  Konfigurasi untuk switch 3 menggunakan subnet `10.19.3.0 ` seperti pada gambar di atas dengan range ip sebagai berikut. Angka 3 pada IP menunjukkan bahwa IP ini digunakan untuk switch 3 yang terhubung dengan `eth3`.
+  <br/>Konfigurasi untuk switch 3 menggunakan subnet `10.19.3.0 ` seperti pada gambar di atas dengan range ip sebagai berikut. Angka 3 pada IP menunjukkan bahwa IP ini digunakan untuk switch 3 yang terhubung dengan `eth3`.
   ```
+  subnet 10.19.3.0 netmask 255.255.255.0{
     range 10.19.3.30 10.19.3.50;
-     }
+    ...
+   }
   ```
 
 - Berikut ini adalah Client Skypie dan Tottoland yang memiliki IP dari DHCP Server. Skypie memiliki ip `10.19.3.69` karena diberikan fixed address yang konfigurasinya akan dijelaskan pada nomor 7.
@@ -80,10 +85,40 @@ Jawaban :
   
 ### No 5
 Soal: Client mendapatkan DNS dari EniesLobby dan client dapat terhubung dengan internet melalui DNS tersebut.
+Jawaban:
+- Menggunakan DNS Forwarder pada EniesLobby sebagai DNS Server supaya client dapat terhubung ke internet dengan menambahkan konfigurasi sebagai berikut pada `/etc/bind/named.conf.options`
+  ```
+  ...
+  forwarders {
+    192.168.122.1;
+  };
+  ...
+  ```
+  dan comment `dnssec-validation auto;` serta menambahkan`allow-query{any;};`
+- Pada client akan terlihat bahwa nameserver mengarah pada IP Enieslobby yaitu `10.19.2.2` ketika mengecek `/etc/resolv.conf` seperti pada gambar    berikut (tambain gambar)
 
 ### No 6
 Soal: Lama waktu DHCP server meminjamkan alamat IP kepada Client yang melalui Switch1 selama 6 menit sedangkan pada client yang melalui Switch3 selama 12 menit. Dengan waktu maksimal yang dialokasikan untuk peminjaman alamat IP selama 120 menit.
-
+Jawaban:
+- Menambahkan konfigurasi `dhdcp.conf` untuk switch 1 dan switch 3 sebagai berikut. 
+  ```
+    subnet 10.19.1.0 netmask 255.255.255.0{
+      ...
+      default-lease-time 360;
+      max-lease-time 7200;
+      ...
+     }
+  ```
+   ```
+    subnet 10.19.3.0 netmask 255.255.255.0{
+      ...
+      default-lease-time 720;
+      max-lease-time 7200;
+      ...
+    }
+  ```
+  Default lease time untuk switch 1 adalah 360 detik dan switch 3 adalah 720 detik, sedangkan max lease time switch 1 dan 3 bernilai sama yaitu 7200.
+  
 ### No 7
 Soal:
 Luffy dan Zoro berencana menjadikan Skypie sebagai server untuk jual beli kapal yang dimilikinya dengan alamat IP yang tetap dengan IP [prefix IP].3.69 (7). 
