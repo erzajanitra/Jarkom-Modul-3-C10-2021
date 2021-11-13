@@ -97,7 +97,7 @@ Jawaban:
   ...
   ```
   dan comment `dnssec-validation auto;` serta menambahkan`allow-query{any;};`
-- Pada semua client akan terlihat bahwa nameserver mengarah pada IP Enieslobby yaitu `10.19.2.2` ketika mengecek `/etc/resolv.conf` seperti pada gambar berikut 
+- Pada semua client akan terlihat bahwa nameserver mengarah pada IP Enieslobby yaitu `10.19.2.2` ketika mengecek `/etc/resolv.conf` seperti pada gambar berikut <br/>
   ![image](https://user-images.githubusercontent.com/75319371/141606015-8a772e55-11e4-48da-b41d-d3eb90b57941.png)
 
 
