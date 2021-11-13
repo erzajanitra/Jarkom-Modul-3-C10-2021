@@ -9,7 +9,7 @@
 
 ## Soal dan Pembahasan
 ### No 1
-Soal: Luffy bersama Zoro berencana membuat peta tersebut dengan kriteria EniesLobby sebagai DNS Server, Jipangu sebagai DHCP Server, Water7 sebagai Proxy Server.
+Soal : Luffy bersama Zoro berencana membuat peta tersebut dengan kriteria EniesLobby sebagai DNS Server, Jipangu sebagai DHCP Server, Water7 sebagai Proxy Server.
 
 Jawaban : Membuat topologi seperti perintah soal dan mencoba ping google.com pada EniesLobby,  Jipangu, dan Water7.
 - Topologi
@@ -149,16 +149,159 @@ hwaddress ether 3e:a0:f8:fb:39:c5
 Saat menyalakan node Skypie, didapatkan IPnya tetap, yaitu 10.19.3.69
 ![7](img/7.png)
 
-### No 8
+### No 8  
+Soal :  
+Pada Loguetown, proxy harus bisa diakses dengan nama jualbelikapal.yyy.com dengan port yang digunakan adalah 5000
+
+Jawab :   
+Untuk membuat proxy, install squid di Water 7 menggunakan `apt-get install squid`, setelah itu buat konfigurasi squid di `/etc/squid/squid.conf`.
+
+Buat konfigurasi proxy untuk menggunakan port 5000 dan memiliki nama jualbelikapal.c10.com
+
+```
+http_port 5000
+visible_hostname jualbelikapal.c10.com
+```
 
 ### No 9
+Soal :   
+Agar transaksi jual beli lebih aman dan pengguna website ada dua orang, proxy dipasang autentikasi user proxy dengan enkripsi MD5 dengan dua username, yaitu luffybelikapalyyy dengan password luffy_yyy dan zorobelikapalyyy dengan password zoro_yyy 
+
+Jawab :    
+Untuk membatasi akses ke proxy, dapat dengan menggunakan htpasswd yang pernah dipelajari di modul sebelumnya.
+
+Buat konfigurasi htpasswd dengan user luffybelikapalc10 dengan password luffy_c10, dan user zorobelikapalc10 dengan password zoro_c10
+
+```
+htpasswd -c /etc/squid/passwd luffybelikapalc10
+htpasswd /etc/squid/passwd zorobelikapalc10
+```
+
+Masukkan konfigurasi password kedalam squid
+
+```
+...
+auth_param basic program /usr/lib/squid/basic_ncsa_auth /etc/squid/passwd
+auth_param basic children 5
+auth_param basic realm Login
+auth_param basic credentialsttl 2 hours
+auth_param basic casesensitive on
+
+acl USERS proxy_auth REQUIRED
+http_access allow USERS
+http_access deny all
+```
+
+Squid akan mengambil konfigurasi password dari `/etc/squid/passwd` dan mengaturnya untuk semua request yang masuk harus melakukan authentikasi terlebih dahulu.
+
+Lakukan restart pada squid dengan menggunakan `service squid restart`
+
+Setelah itu, tes di LogueTown menggunakan lynx. Namun, sebelum itu kita perlu melakukan setting agar LogueTown menggunakan proxy dengan `export http_proxy="http://10.19.2.3=5000"`. Setelah itu barulah lakukan lynx ke situs manapun.
+
+![9a](img/9a.png)
+![9b](img/9b.png)
 
 ### No 10
+Soal :   
+Transaksi jual beli tidak dilakukan setiap hari, oleh karena itu akses internet dibatasi hanya dapat diakses setiap hari Senin-Kamis pukul 07.00-11.00 dan setiap hari Selasa-Jum’at pukul 17.00-03.00 keesokan harinya (sampai Sabtu pukul 03.00)
+
+Jawab :  
+Untuk membatasi waktu proxy, maka buat konfigurasi waktu di `/etc/squid/acl.conf` dan isi dengan waktu yang akan dibatasi
+
+```
+acl TIME time MTWH 07:00-11:00
+acl TIME time TWHF 17:00-23:59
+acl TIME time WHFA 00:00-03:00
+```
+
+Masukkan konfigurasi acl di `/etc/squid/acl.conf` ke dalam `/etc/squid/squid.conf` dan tambahkan acl time pada http_access.
+
+```
+include /etc/squid/acl.conf
+...
+
+http_access allow TIME USERS
+...
+```
+
+Lakukan restart pada squid dan tes proxy di LogueTown. Tes pada hari senin jam 10 pagi :
+![10a](img/10a.png)
+![10b](img/10b.png)
+
+
+Tes pada hari senin jam 5 pagi :
+![10c](img/10c.png)
+![10d](img/10d.png)
 
 ### No 11
+Soal :    
+Agar transaksi bisa lebih fokus berjalan, maka dilakukan redirect website agar mudah mengingat website transaksi jual beli kapal. Setiap mengakses google.com, akan diredirect menuju super.franky.yyy.com dengan website yang sama pada soal shift modul 2. Web server super.franky.yyy.com berada pada node Skypie
+
+Jawab :   
+Buat domain baru bernama super.franky.c10.com di EniesLobby. Tambahkan konfigurasi domain super.franky.c10.com di `/etc/bind/named.conf.local`
+
+```
+zone "super.franky.c10.com"{
+        type master;
+        file "/etc/bind/super.franky.c10.com";
+        allow-transfer {10.19.3.69;};
+};
+```
+
+Buat konfigurasi untuk domain super.franky.c10.com di `/etc/bind/super.franky.c10.com`
+
+```
+$TTL    604800
+@       IN      SOA     super.franky.c10.com. root.super.franky.c10.com. (
+                         2021110801             ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@       IN      NS      super.franky.c10.com.
+@       IN      A       10.19.3.69 ; IP Skypie
+www     IN      CNAME   super.franky.c10.com.
+@       IN      AAAA    ::1
+```
+
+Lakukan restart pada bind menggunakan `service bind9 restart`. Setelah itu buat webserver super.franky.c10.com di Skypie. Buat konfigurasi webserver di `/etc/apache2/sites-available/super.franky.c10.com.conf`
+
+```
+<VirtualHost *:80>
+
+        ServerAdmin webmaster@localhost
+        ServerAlias www.super.franky.c10.com
+        DocumentRoot /var/www/super.franky.c10.com
+
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+</VirtualHost>
+```
+
+Download isi super.franky.c10.com dengan menggunakan `wget https://raw.githubusercontent.com/FeinardSlim/Praktikum-Modul-2-Jarkom/main/super.franky.zip` dan unzip file tersebut. Setelah itu rename folder menjadi super.franky.c10.com
+
+Aktifkan situs dengan menggunakan `a2ensite apache2 super.franky.c10.com` dan lakukan restart pada apache dengan `service apache2 restart`
+
+Lalu tambahkan konfigurasi pada squid sehingga ketika mengakses situs google.com, maka akan langsung diredirect ke super.franky.c10.com
+
+```
+acl BLACKLIST dstdomain .google.com
+deny_info http://super.franky.c10.com/ BLACKLIST
+http_access deny TIME BLACKLIST
+```
+
+Ubah nameserver pada Water7 menjadi 10.19.2.2 dan lakukan restart squid menggunakan `service squid restart`
+
+Tes menggunakan lynx di LogueTown.
+![11a](img/11a.png)
+![11b](img/11b.png)
+![11c](img/11c.png)
+![11d](img/11d.png)
 
 ### No 12 & 13
-Soal: 
+Soal:   
 Saatnya berlayar! Luffy dan Zoro akhirnya memutuskan untuk berlayar untuk mencari harta karun di super.franky.yyy.com. Tugas pencarian dibagi menjadi dua misi, Luffy bertugas untuk mendapatkan gambar (.png, .jpg), sedangkan Zoro mendapatkan sisanya. Karena Luffy orangnya sangat teliti untuk mencari harta karun, ketika ia berhasil mendapatkan gambar, ia mendapatkan gambar dan melihatnya dengan kecepatan 10 kbps (12). Sedangkan, Zoro yang sangat bersemangat untuk mencari harta karun, sehingga kecepatan kapal Zoro tidak dibatasi ketika sudah mendapatkan harta yang diinginkannya (13).
 
 Jawaban:
