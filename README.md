@@ -69,6 +69,7 @@ Jawaban :
   
 ### No 4
 Soal: Client yang melalui Switch3 mendapatkan range IP dari [prefix IP].3.30 - [prefix IP].3.50 
+
 Jawaban : 
 - Konfigurasi pada `/etc/dhcp/dhcpd.conf` untuk set range IP pada switch 3 
   <br/>Konfigurasi untuk switch 3 menggunakan subnet `10.19.3.0 ` seperti pada gambar di atas dengan range ip sebagai berikut. Angka 3 pada IP menunjukkan bahwa IP ini digunakan untuk switch 3 yang terhubung dengan `eth3`.
@@ -85,6 +86,7 @@ Jawaban :
   
 ### No 5
 Soal: Client mendapatkan DNS dari EniesLobby dan client dapat terhubung dengan internet melalui DNS tersebut.
+
 Jawaban:
 - Menggunakan DNS Forwarder pada EniesLobby sebagai DNS Server supaya client dapat terhubung ke internet dengan menambahkan konfigurasi sebagai berikut pada `/etc/bind/named.conf.options`
   ```
@@ -95,10 +97,13 @@ Jawaban:
   ...
   ```
   dan comment `dnssec-validation auto;` serta menambahkan`allow-query{any;};`
-- Pada client akan terlihat bahwa nameserver mengarah pada IP Enieslobby yaitu `10.19.2.2` ketika mengecek `/etc/resolv.conf` seperti pada gambar    berikut (tambain gambar)
+- Pada semua client akan terlihat bahwa nameserver mengarah pada IP Enieslobby yaitu `10.19.2.2` ketika mengecek `/etc/resolv.conf` seperti pada gambar berikut 
+  ![image](https://user-images.githubusercontent.com/75319371/141606015-8a772e55-11e4-48da-b41d-d3eb90b57941.png)
+
 
 ### No 6
 Soal: Lama waktu DHCP server meminjamkan alamat IP kepada Client yang melalui Switch1 selama 6 menit sedangkan pada client yang melalui Switch3 selama 12 menit. Dengan waktu maksimal yang dialokasikan untuk peminjaman alamat IP selama 120 menit.
+
 Jawaban:
 - Menambahkan konfigurasi `dhdcp.conf` untuk switch 1 dan switch 3 sebagai berikut. 
   ```
